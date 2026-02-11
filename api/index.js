@@ -59,9 +59,13 @@ app.use(cors());
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(securityMiddleware);
 
-// Use routes
+// Use routes - Use multiple mount points to handle Vercel's various routing behaviors
 app.use("/api", analysisRoutes);
 app.use("/api/parsing", parsingRoutes);
+
+// Fallback for direct function calls if Vercel strips the prefix
+app.use("/", analysisRoutes);
+app.use("/parsing", parsingRoutes);
 
 // Root path for health checks
 app.get("/api/health", (req, res) => {
