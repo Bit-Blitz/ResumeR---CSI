@@ -1,4 +1,4 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
 
 // Helper to clean JSON from AI response
@@ -320,4 +320,4 @@ router.post("/extract", async (req, res, next) => {
   }
 });
 
-module.exports = router;
+export default router;

@@ -1,10 +1,15 @@
 // Load environment variables
-require("dotenv").config();
-const express = require("express");
-const path = require("path");
-const cors = require("cors");
-const bodyParser = require("body-parser");
-const Groq = require("groq-sdk");
+import dotenv from "dotenv";
+dotenv.config();
+
+import express from "express";
+import cors from "cors";
+import bodyParser from "body-parser";
+import Groq from "groq-sdk";
+
+// Import routes using ESM
+import analysisRoutes from "./routes/analysis.js";
+import parsingRoutes from "./routes/parsing.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -25,7 +30,6 @@ const MAX_REQUESTS = 100; // Increased for production stability
 const securityMiddleware = (req, res, next) => {
   const ip = req.headers['x-forwarded-for'] || req.ip; // Vercel uses x-forwarded-for
   const now = Date.now();
-  const apiKey = req.headers['x-api-key'];
 
   // 1. Rate Limiting (Note: In-memory resets on Vercel redeploys/cold starts)
   if (!rateLimit[ip]) {
@@ -51,14 +55,11 @@ const securityMiddleware = (req, res, next) => {
   next();
 };
 
-// --- ROUTES ---
-const analysisRoutes = require("./routes/analysis");
-const parsingRoutes = require("./routes/parsing");
-
 app.use(cors());
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(securityMiddleware);
 
+// Use routes
 app.use("/api", analysisRoutes);
 app.use("/api/parsing", parsingRoutes);
 
@@ -87,5 +88,5 @@ if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
   });
 }
 
-// Export for Vercel Serverless
-module.exports = app;
+// Export for Vercel Serverless (using ESM export default)
+export default app;
