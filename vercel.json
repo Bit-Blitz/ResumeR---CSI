@@ -2,7 +2,7 @@
     "version": 2,
     "framework": "vite",
     "functions": {
-        "src/api/index.js": {
+        "api/index.js": {
             "runtime": "vercel-node@latest",
             "memory": 1024,
             "maxDuration": 60
@@ -11,7 +11,7 @@
     "rewrites": [
         {
             "source": "/api/(.*)",
-            "destination": "/src/api/index.js"
+            "destination": "/api/index.js"
         },
         {
             "source": "/(.*)",
