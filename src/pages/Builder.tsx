@@ -611,7 +611,7 @@ const Builder = () => {
     steps[currentStep + 1]?.title ?? "Preview & Generate";
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 dark:from-gray-950 dark:via-blue-950/20 dark:to-purple-950/10 transition-colors duration-300 overflow-hidden">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 dark:from-gray-950 dark:via-blue-950/20 dark:to-purple-950/10 transition-colors duration-300 overflow-y-auto">
       {/* Start Analysis Overlay */}
       <AnimatePresence>
         {showStartAnalysis && (
@@ -913,7 +913,7 @@ const Builder = () => {
       )}
 
       {/* Main Content */}
-      <div className="flex-1 overflow-hidden px-4 md:px-6 pb-4 max-w-[1800px] mx-auto w-full">
+      <div className="flex-1 overflow-y-auto px-4 md:px-6 pb-4 max-w-[1800px] mx-auto w-full custom-scrollbar">
         {/* Mobile Layout - Stacked */}
         {isMobile ? (
           <div className="flex flex-col gap-4">
