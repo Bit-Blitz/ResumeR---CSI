@@ -409,7 +409,7 @@ const Builder = () => {
   }, [realTimeATS?.score, hasCelebrated]);
 
   // Desktop sliding window state - only used on desktop
-  const [leftWidth, setLeftWidth] = useState(38); // percentage - adjusted for better default dominance of the preview section
+  const [leftWidth, setLeftWidth] = useState(45); // percentage - Balanced ratio for side-by-side editing
   const [isResizing, setIsResizing] = useState(false);
   const [versions, setVersions] = useState<any[]>(() => {
     return JSON.parse(localStorage.getItem("resume-creator-resume-versions") || "[]");
@@ -599,7 +599,7 @@ const Builder = () => {
     steps[currentStep + 1]?.title ?? "Preview & Generate";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 dark:from-gray-950 dark:via-blue-950/20 dark:to-purple-950/10 transition-colors duration-300">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 dark:from-gray-950 dark:via-blue-950/20 dark:to-purple-950/10 transition-colors duration-300 overflow-hidden">
       {/* Start Analysis Overlay */}
       <AnimatePresence>
         {showStartAnalysis && (
@@ -901,7 +901,7 @@ const Builder = () => {
       )}
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 pb-8">
+      <div className="flex-1 overflow-hidden px-4 md:px-6 pb-4 max-w-[1800px] mx-auto w-full">
         {/* Mobile Layout - Stacked */}
         {isMobile ? (
           <div className="flex flex-col gap-4">
@@ -1214,11 +1214,11 @@ const Builder = () => {
           </div>
         ) : (
           /* Desktop Layout - Side by Side with Resizer */
-          <div className="flex gap-0 max-w-full mx-auto relative">
+          <div className="flex gap-0 w-full h-full relative overflow-hidden bg-white/50 dark:bg-gray-900/50 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-2xl transition-all duration-300">
             {/* Form Section */}
             <Card
               style={{ width: `${leftWidth}%` }}
-              className="p-6 shadow-2xl border-r border-white/20 dark:border-white/5 dark:bg-black/40 backdrop-blur-xl bg-white/80 transition-all duration-500 ease-in-out z-10 rounded-none border-y-0 border-l-0 relative overflow-hidden"
+              className="p-6 shadow-none border-r border-gray-200 dark:border-gray-800 dark:bg-black/40 backdrop-blur-xl bg-white/80 transition-all duration-300 z-10 rounded-none border-y-0 border-l-0 relative flex flex-col h-full overflow-hidden"
             >
               {/* Glassmorphism Highlight Effects */}
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500/50 via-purple-500/50 to-pink-500/50 opacity-30" />
@@ -1331,7 +1331,7 @@ const Builder = () => {
                 </motion.div>
               </div>
 
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-1 flex flex-col overflow-hidden">
                 <TabsList className="grid w-full grid-cols-3 mb-6 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
                   <TabsTrigger
                     value="form"
@@ -1354,7 +1354,7 @@ const Builder = () => {
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="form" className="mt-6">
+                <TabsContent value="form" className="mt-0 flex-1 overflow-y-auto pr-2 custom-scrollbar focus-visible:outline-none">
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={currentStep}
@@ -1494,7 +1494,7 @@ const Builder = () => {
                   </AnimatePresence>
                 </TabsContent>
 
-                <TabsContent value="analysis" className="mt-6">
+                <TabsContent value="analysis" className="mt-0 flex-1 overflow-y-auto pr-2 custom-scrollbar focus-visible:outline-none">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -1510,7 +1510,7 @@ const Builder = () => {
                   </motion.div>
                 </TabsContent>
 
-                <TabsContent value="generate" className="mt-6">
+                <TabsContent value="generate" className="mt-0 flex-1 overflow-y-auto pr-2 custom-scrollbar focus-visible:outline-none">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -1580,7 +1580,7 @@ const Builder = () => {
             {/* Preview Section */}
             <Card
               style={{ width: `${100 - leftWidth}%` }}
-              className="shadow-xl border-0 overflow-hidden flex flex-col h-screen bg-slate-200 transition-all duration-300 ease-in-out hidden md:flex"
+              className="shadow-none border-0 overflow-hidden flex flex-col h-full bg-slate-200/50 transition-all duration-300 ease-in-out hidden md:flex"
             >
               <div className="p-4 bg-white border-b border-gray-200">
                 <h2 className="text-xl font-bold text-gray-900 mb-3">
@@ -1708,7 +1708,7 @@ const Builder = () => {
                   </div>
                 </div>
               </div>
-              <div className="flex-1 overflow-auto bg-slate-200/50 p-6 md:p-10 lg:p-14 min-h-[600px] flex justify-center custom-scrollbar relative">
+              <div className="flex-1 overflow-auto bg-slate-200/50 p-6 md:p-10 lg:p-14 h-full flex justify-center custom-scrollbar relative">
                 {/* Visual Canvas Elements */}
                 <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-30">
                   <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-400/20 blur-[120px] rounded-full" />
@@ -1796,7 +1796,7 @@ const Builder = () => {
           />
         </DialogContent>
       </Dialog>
-    </div>
+    </div >
   );
 };
 
