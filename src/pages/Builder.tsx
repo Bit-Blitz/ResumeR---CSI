@@ -17,6 +17,11 @@ import {
   Save,
   Zap,
   TrendingUp,
+  PanelRightClose,
+  PanelRightOpen,
+  ChevronLeft,
+  ChevronRight,
+  Maximize2,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -51,6 +56,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Tooltip,
@@ -58,6 +64,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { ResumeDownloadOptions } from "@/components/resume/ResumeGenerator";
 
 export interface ResumeData {
@@ -246,6 +257,7 @@ const Builder = () => {
   const [displayScore, setDisplayScore] = useState(0);
   const [activeTab, setActiveTab] = useState<string>("form");
   const [isMigratingTemplate, setIsMigratingTemplate] = useState(false);
+  const [isPreviewCollapsed, setIsPreviewCollapsed] = useState(false);
 
   // Handle template change with migration animation
   const handleTemplateChange = (newTemplate: typeof templateName) => {
@@ -1217,8 +1229,8 @@ const Builder = () => {
           <div className="flex gap-0 w-full h-full relative overflow-hidden bg-white/50 dark:bg-gray-900/50 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-2xl transition-all duration-300">
             {/* Form Section */}
             <Card
-              style={{ width: `${leftWidth}%` }}
-              className="p-6 shadow-none border-r border-gray-200 dark:border-gray-800 dark:bg-black/40 backdrop-blur-xl bg-white/80 transition-all duration-300 z-10 rounded-none border-y-0 border-l-0 relative flex flex-col h-full overflow-hidden"
+              style={{ width: isPreviewCollapsed ? "100%" : `${leftWidth}%` }}
+              className={`p-6 shadow-none border-r border-gray-200 dark:border-gray-800 dark:bg-black/40 backdrop-blur-xl bg-white/80 transition-all duration-500 z-10 rounded-none border-y-0 border-l-0 relative flex flex-col h-full overflow-hidden ${isPreviewCollapsed ? 'border-r-0' : ''}`}
             >
               {/* Glassmorphism Highlight Effects */}
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500/50 via-purple-500/50 to-pink-500/50 opacity-30" />
@@ -1329,6 +1341,16 @@ const Builder = () => {
                     ))}
                   </div>
                 </motion.div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsPreviewCollapsed(!isPreviewCollapsed)}
+                    className="rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 group/collapse"
+                  >
+                    {isPreviewCollapsed ? <PanelRightOpen className="w-5 h-5 group-hover/collapse:scale-110 transition-transform" /> : <PanelRightClose className="w-5 h-5 group-hover/collapse:scale-110 transition-transform" />}
+                  </Button>
+                </div>
               </div>
 
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-1 flex flex-col overflow-hidden">
@@ -1363,134 +1385,136 @@ const Builder = () => {
                       exit={{ opacity: 0, x: -50 }}
                       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                     >
-                      <div className="mb-6">
-                        <motion.h2
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="text-2xl font-bold text-gray-900 dark:text-white mb-2"
-                        >
-                          {steps[currentStep].title}
-                        </motion.h2>
-                        <motion.p
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ delay: 0.1 }}
-                          className="text-gray-600 dark:text-gray-400"
-                        >
-                          Fill in your {steps[currentStep].title.toLowerCase()}{" "}
-                          details
-                        </motion.p>
+                      <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-100 dark:border-gray-800">
+                        <div>
+                          <motion.h2
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="text-2xl font-bold text-gray-900 dark:text-white"
+                          >
+                            {steps[currentStep].title}
+                          </motion.h2>
+                          <motion.p
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.1 }}
+                            className="text-xs text-gray-500 font-medium"
+                          >
+                            Step {currentStep + 1} of {steps.length}: {steps[currentStep].title}
+                          </motion.p>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handlePrevious}
+                            disabled={currentStep === 0}
+                            className="h-10 px-4 border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+                          >
+                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            Prev
+                          </Button>
+
+                          {currentStep === steps.length - 1 ? (
+                            <Button
+                              size="sm"
+                              className="h-10 px-6 bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+                              onClick={() => setShowGenerateModal(true)}
+                            >
+                              Generate
+                              <ArrowRight className="w-4 h-4 ml-2" />
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              onClick={handleNext}
+                              className="h-10 px-6 bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+                            >
+                              Next
+                              <ArrowRight className="w-4 h-4 ml-2" />
+                            </Button>
+                          )}
+                        </div>
                       </div>
 
                       <CurrentStepComponent
                         data={resumeData}
                         updateData={updateResumeData}
                       />
-
-                      {/* Navigation Buttons */}
-                      <div className="flex flex-col gap-4 mt-8 sm:flex-row sm:items-center sm:justify-between border-t border-gray-100 dark:border-gray-800 pt-6">
-                        <Button
-                          variant="outline"
-                          onClick={handlePrevious}
-                          disabled={currentStep === 0}
-                          className="flex items-center space-x-2 transition-all duration-200 disabled:opacity-50 border-gray-200 dark:border-gray-800 dark:hover:bg-gray-800 h-11 px-6"
-                        >
-                          <ArrowLeft className="w-4 h-4" />
-                          <span>Previous</span>
-                        </Button>
-
-                        {currentStep === steps.length - 1 ? (
-                          <Button
-                            className="bg-blue-600 hover:bg-blue-700 text-white flex items-center space-x-2 shadow-sm transition-all duration-200 h-11 px-8"
-                            onClick={() => setShowGenerateModal(true)}
-                          >
-                            <span>Generate Resume</span>
-                            <ArrowRight className="w-4 h-4" />
-                          </Button>
-                        ) : (
-                          <Button
-                            onClick={handleNext}
-                            className="bg-blue-600 hover:bg-blue-700 text-white flex items-center space-x-2 shadow-sm transition-all duration-200 h-11 px-8"
-                          >
-                            <span>Next</span>
-                            <ArrowRight className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
-
-                      <div className="mt-6 grid gap-4 lg:grid-cols-2">
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.3 }}
-                          className="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-5 border border-gray-100 dark:border-gray-800"
-                        >
-                          <div className="flex justify-between items-start mb-4">
-                            <div>
-                              <p className="text-[10px] capitalize tracking-widest font-bold text-gray-500 dark:text-gray-300">
-                                Builder progress
-                              </p>
-                              <h3 className="mt-1 text-xl font-bold text-gray-900 dark:text-white">
-                                {completedSteps + 1} / {steps.length} sections complete
-                              </h3>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-[8px] capitalize tracking-wider text-blue-600 dark:text-blue-400 font-bold">Platform Stats</p>
-                              <div className="flex items-center mt-1 space-x-3">
-                                <div className="flex flex-col">
-                                  <span className="text-sm font-bold text-gray-900 dark:text-white">
-                                    {localStorage.getItem("resume-creator-analytics-extractions") || "0"}
-                                  </span>
-                                  <span className="text-[8px] text-gray-500">Extractions</span>
-                                </div>
-                                <div className="h-4 w-[1px] bg-gray-200 dark:bg-gray-700" />
-                                <div className="flex flex-col">
-                                  <span className="text-sm font-bold text-gray-900 dark:text-white">
-                                    {versions.length}
-                                  </span>
-                                  <span className="text-[8px] text-gray-500">Versions</span>
-                                </div>
+                    </motion.div>
+                    <div className="mt-6 grid gap-4 lg:grid-cols-2">
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-5 border border-gray-100 dark:border-gray-800"
+                      >
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <p className="text-[10px] capitalize tracking-widest font-bold text-gray-500 dark:text-gray-300">
+                              Builder progress
+                            </p>
+                            <h3 className="mt-1 text-xl font-bold text-gray-900 dark:text-white">
+                              {completedSteps + 1} / {steps.length} sections complete
+                            </h3>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[8px] capitalize tracking-wider text-blue-600 dark:text-blue-400 font-bold">Platform Stats</p>
+                            <div className="flex items-center mt-1 space-x-3">
+                              <div className="flex flex-col">
+                                <span className="text-sm font-bold text-gray-900 dark:text-white">
+                                  {localStorage.getItem("resume-creator-analytics-extractions") || "0"}
+                                </span>
+                                <span className="text-[8px] text-gray-500">Extractions</span>
+                              </div>
+                              <div className="h-4 w-[1px] bg-gray-200 dark:bg-gray-700" />
+                              <div className="flex flex-col">
+                                <span className="text-sm font-bold text-gray-900 dark:text-white">
+                                  {versions.length}
+                                </span>
+                                <span className="text-[8px] text-gray-500">Versions</span>
                               </div>
                             </div>
                           </div>
+                        </div>
 
-                          <div className="h-1.5 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-3">
-                            <motion.div
-                              className="h-full bg-blue-600"
-                              initial={{ width: 0 }}
-                              animate={{ width: `${((completedSteps + 1) / steps.length) * 100}%` }}
-                              transition={{ duration: 1, ease: "easeOut" }}
-                            />
-                          </div>
+                        <div className="h-1.5 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-3">
+                          <motion.div
+                            className="h-full bg-blue-600"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${((completedSteps + 1) / steps.length) * 100}%` }}
+                            transition={{ duration: 1, ease: "easeOut" }}
+                          />
+                        </div>
 
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            {remainingSteps >= 0
-                              ? `Currently editing ${steps[currentStep].title}. Next: ${nextSectionTitle}.`
-                              : "All sections complete — ready to generate!"}
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {remainingSteps >= 0
+                            ? `Currently editing ${steps[currentStep].title}. Next: ${nextSectionTitle}.`
+                            : "All sections complete — ready to generate!"}
+                        </p>
+                      </motion.div>
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 }}
+                      >
+                        <Card className="p-5 border-dashed border-2 border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                            Quick polish checklist
                           </p>
-                        </motion.div>
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.4 }}
-                        >
-                          <Card className="p-5 border-dashed border-2 border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300">
-                            <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                              Quick polish checklist
-                            </p>
-                            <ul className="mt-3 space-y-2 text-sm text-gray-600 dark:text-gray-300 list-disc list-inside">
-                              <li>Lead bullets with strong action verbs.</li>
-                              <li>
-                                Back wins with data (e.g. "Cut costs by 12%").
-                              </li>
-                              <li>
-                                Keep sentences under two lines for readability.
-                              </li>
-                            </ul>
-                          </Card>
-                        </motion.div>
-                      </div>
-                    </motion.div>
+                          <ul className="mt-3 space-y-2 text-sm text-gray-600 dark:text-gray-300 list-disc list-inside">
+                            <li>Lead bullets with strong action verbs.</li>
+                            <li>
+                              Back wins with data (e.g. "Cut costs by 12%").
+                            </li>
+                            <li>
+                              Keep sentences under two lines for readability.
+                            </li>
+                          </ul>
+                        </Card>
+                      </motion.div>
+                    </div>
                   </AnimatePresence>
                 </TabsContent>
 
@@ -1564,218 +1588,244 @@ const Builder = () => {
             </AnimatePresence>
 
             {/* Resizer - Desktop Only */}
-            {isPowerUserMode && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                onMouseDown={startResize}
-                onDoubleClick={(e) => e.preventDefault()}
-                className="w-1.5 cursor-col-resize bg-gray-200 dark:bg-gray-800 hover:bg-blue-500 dark:hover:bg-blue-600 transition-all select-none hidden md:flex items-center justify-center group/resizer z-50 overflow-visible"
-                style={{ userSelect: "none" }}
-              >
-                <div className="w-1 h-8 bg-gray-300 dark:bg-gray-700 rounded-full group-hover/resizer:bg-white transition-colors" />
-              </motion.div>
-            )}
-
-            {/* Preview Section */}
-            <Card
-              style={{ width: `${100 - leftWidth}%` }}
-              className="shadow-none border-0 overflow-hidden flex flex-col h-full bg-slate-200/50 transition-all duration-300 ease-in-out hidden md:flex"
-            >
-              <div className="p-4 bg-white border-b border-gray-200">
-                <h2 className="text-xl font-bold text-gray-900 mb-3">
-                  Design & Preview
-                </h2>
-
-                {/* AI CHANGES TOGGLE */}
-                <div className="flex items-center justify-between p-2 mb-4 bg-green-50 rounded-lg border border-green-100">
-                  <div className="flex items-center space-x-2">
-                    <Bot className="w-4 h-4 text-green-600" />
-                    <span className="text-[10px] font-bold text-green-800 capitalize tracking-wider">Highlight AI Improvements</span>
-                  </div>
-                  <button
-                    onClick={() => setShowAIChanges(!showAIChanges)}
-                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${showAIChanges ? 'bg-green-600' : 'bg-gray-200'}`}
-                  >
-                    <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${showAIChanges ? 'translate-x-5' : 'translate-x-1'}`} />
-                  </button>
-                </div>
-                <div className="mb-2">
-                  <label className="block text-xs font-medium text-gray-700 mb-2">
-                    Choose Template
-                  </label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {(
-                      [
-                        "default",
-                        "modern",
-                        "professional",
-                        "creative",
-                        "minimalist",
-                        "bold",
-                      ] as const
-                    ).map((template) => (
-                      <Button
-                        key={template}
-                        variant={
-                          templateName === template ? "default" : "outline"
-                        }
-                        className={`text-xs h-9 px-3 w-full transition-all duration-200 ${templateName === template
-                          ? "bg-blue-600 text-white shadow-sm"
-                          : "hover:bg-gray-50 border-gray-200"
-                          }`}
-                        onClick={() => handleTemplateChange(template)}
-                      >
-                        {template === "professional"
-                          ? "Pro"
-                          : template === "minimalist"
-                            ? "Minimal"
-                            : template.charAt(0).toUpperCase() +
-                            template.slice(1).substring(0, 3)}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-                <div className="mt-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowFullPreview(true)}
-                    className="w-full flex items-center justify-center gap-2 bg-blue-50/50 hover:bg-blue-100/50 border-blue-100 text-blue-700 transition-all duration-200 h-10"
-                  >
-                    <FileText className="w-4 h-4" />
-                    View Full Preview
-                  </Button>
-                </div>
-
-                {/* VERSION HISTORY */}
-                <div className="mt-6 p-4 bg-gray-50/50 backdrop-blur-sm rounded-xl border border-gray-100 shadow-inner group/versions">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <h4 className="text-[10px] font-black capitalize tracking-widest text-gray-500 flex items-center gap-1.5">
-                        <History className="w-3 h-3" />
-                        Version History
-                      </h4>
-                      <motion.span
-                        key={versions.length}
-                        initial={{ scale: 0.5, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="px-1.5 py-0.5 rounded-full bg-blue-100 text-[8px] font-black text-blue-600 border border-blue-200"
-                      >
-                        {versions.length}
-                      </motion.span>
-                    </div>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 px-2 text-[10px] font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg border border-blue-100 transition-all flex items-center gap-1"
-                            onClick={() => saveResumeVersion(realTimeATS.score)}
-                          >
-                            <Save className="w-2.5 h-2.5" />
-                            Snapshot
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top">
-                          <p className="text-[10px]">Create a manual restore point</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  <div className="space-y-2 max-h-32 overflow-y-auto pr-1 custom-scrollbar">
-                    {versions.length === 0 ? (
-                      <p className="text-[10px] text-gray-400 italic">No saved versions yet.</p>
-                    ) : (
-                      versions.map((v: any) => (
-                        <div key={v.id} className="flex items-center justify-between p-2 bg-white rounded border border-gray-100 group">
-                          <div className="flex flex-col overflow-hidden">
-                            <span className="text-[11px] font-medium truncate">{v.name}</span>
-                            <span className="text-[9px] text-gray-400">{new Date(v.timestamp).toLocaleTimeString()}</span>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => loadResumeVersion(v)}
-                          >
-                            <ArrowRight className="w-3 h-3 text-blue-600" />
-                          </Button>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div className="flex-1 overflow-auto bg-slate-200/50 p-6 md:p-10 lg:p-14 h-full flex justify-center custom-scrollbar relative">
-                {/* Visual Canvas Elements */}
-                <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-30">
-                  <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-400/20 blur-[120px] rounded-full" />
-                  <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-400/20 blur-[120px] rounded-full" />
-                </div>
-
+            {
+              isPowerUserMode && !isPreviewCollapsed && (
                 <motion.div
-                  key={templateName + (isMigratingTemplate ? '-migrating' : '')}
-                  initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                  className={`w-full ${templateName === "creative" ? "max-w-full" : "max-w-[840px]"} bg-white shadow-[0_25px_60px_rgba(0,0,0,0.15)] rounded-sm ring-1 ring-gray-950/10 transition-all duration-300 ease-in-out relative z-10 border border-gray-100/50`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  onMouseDown={startResize}
+                  onDoubleClick={(e) => e.preventDefault()}
+                  className="w-1.5 cursor-col-resize bg-gray-200 dark:bg-gray-800 hover:bg-blue-500 dark:hover:bg-blue-600 transition-all select-none hidden md:flex items-center justify-center group/resizer z-50 overflow-visible"
+                  style={{ userSelect: "none" }}
                 >
-                  {isMigratingTemplate ? (
-                    <div className="p-8 space-y-8 animate-pulse">
-                      <div className="flex justify-between items-start">
-                        <div className="space-y-3 w-1/2">
-                          <div className="h-8 bg-gray-200 rounded-md w-3/4"></div>
-                          <div className="h-4 bg-gray-100 rounded-md w-1/2"></div>
+                  <div className="w-1 h-8 bg-gray-300 dark:bg-gray-700 rounded-full group-hover/resizer:bg-white transition-colors" />
+                </motion.div>
+              )
+            }
+
+            <AnimatePresence>
+              {!isPreviewCollapsed && (
+                <motion.div
+                  initial={{ width: 0, opacity: 0 }}
+                  animate={{ width: `${100 - leftWidth}%`, opacity: 1 }}
+                  exit={{ width: 0, opacity: 0 }}
+                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  className="hidden md:flex flex-col h-full bg-slate-200/50 relative"
+                >
+                  <Card
+                    className="shadow-none border-0 overflow-hidden flex flex-col h-full bg-transparent w-full"
+                  >
+                    <div className="px-5 py-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 flex items-center justify-between sticky top-0 z-30">
+                      <div className="flex items-center gap-4">
+                        <h2 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
+                          <Layout className="w-4 h-4 text-blue-600" />
+                          Live Preview
+                        </h2>
+                        <div className="h-4 w-[1px] bg-gray-200 dark:bg-gray-800 hidden lg:block" />
+
+                        {/* Compact Template Switcher */}
+                        <div className="hidden lg:flex items-center gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg border border-gray-200 dark:border-gray-700">
+                          {(["default", "modern", "professional"] as const).map((t) => (
+                            <button
+                              key={t}
+                              onClick={() => handleTemplateChange(t)}
+                              className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${templateName === t
+                                ? "bg-white dark:bg-gray-700 text-blue-600 shadow-sm"
+                                : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                                }`}
+                            >
+                              {t.charAt(0).toUpperCase() + t.slice(1)}
+                            </button>
+                          ))}
+                          <div className="px-2">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <button className="text-[10px] font-bold text-gray-400 hover:text-blue-600 transition-colors">
+                                  More...
+                                </button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-md">
+                                <DialogHeader>
+                                  <DialogTitle>Choose Template</DialogTitle>
+                                </DialogHeader>
+                                <div className="grid grid-cols-2 gap-3 p-4">
+                                  {(["default", "modern", "professional", "creative", "minimalist", "bold"] as const).map((t) => (
+                                    <Button
+                                      key={t}
+                                      variant={templateName === t ? "default" : "outline"}
+                                      className="justify-start gap-2 h-12"
+                                      onClick={() => handleTemplateChange(t)}
+                                    >
+                                      <div className={`w-3 h-3 rounded-full ${templateName === t ? 'bg-white' : 'bg-blue-500'}`} />
+                                      {t.charAt(0).toUpperCase() + t.slice(1)}
+                                    </Button>
+                                  ))}
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                          </div>
                         </div>
-                        <div className="w-20 h-20 bg-gray-100 rounded-full"></div>
                       </div>
-                      <div className="space-y-4">
-                        <div className="h-4 bg-gray-200 rounded-md w-full"></div>
-                        <div className="h-4 bg-gray-200 rounded-md w-full"></div>
-                        <div className="h-4 bg-gray-200 rounded-md w-2/3"></div>
-                      </div>
-                      <div className="grid grid-cols-3 gap-4">
-                        {[1, 2, 3].map(i => (
-                          <div key={i} className="space-y-2">
-                            <div className="h-4 bg-gray-200 rounded-md w-full"></div>
-                            <div className="h-3 bg-gray-100 rounded-md w-3/4"></div>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="space-y-6 pt-4">
-                        {[1, 2].map(i => (
-                          <div key={i} className="space-y-3">
-                            <div className="h-6 bg-gray-200 rounded-md w-1/3"></div>
-                            <div className="h-4 bg-gray-100 rounded-md w-full"></div>
-                            <div className="h-4 bg-gray-100 rounded-md w-5/6"></div>
-                          </div>
-                        ))}
+
+                      <div className="flex items-center gap-3">
+                        {/* AI Highlight Toggle */}
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                onClick={() => setShowAIChanges(!showAIChanges)}
+                                className={`p-2 rounded-xl border transition-all flex items-center gap-2 ${showAIChanges
+                                  ? "bg-green-50 border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-800"
+                                  : "bg-gray-50 border-gray-200 text-gray-500 dark:bg-gray-800 dark:border-gray-700"
+                                  }`}
+                              >
+                                <Bot className={`w-4 h-4 ${showAIChanges ? "animate-pulse" : ""}`} />
+                                <span className="text-[10px] font-bold hidden xl:inline">AI Insights</span>
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Toggle AI Improvement Highlights</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowFullPreview(true)}
+                          className="hidden sm:flex items-center gap-2 h-9 px-4 border-blue-100 hover:bg-blue-50 text-blue-600 dark:border-blue-900 dark:hover:bg-blue-900/30 transition-all rounded-xl shadow-sm"
+                        >
+                          <Maximize2 className="w-3.5 h-3.5" />
+                          <span className="text-[10px] font-bold uppercase tracking-wider">Expand</span>
+                        </Button>
                       </div>
                     </div>
-                  ) : (
-                    <ResumePreview
-                      data={resumeData}
-                      templateName={templateName}
-                      showAIChanges={showAIChanges}
-                      jobDescription={jobDescription}
-                      isScanning={isScanning}
-                      scanStep={scanStep}
-                      activeSection={steps[currentStep].title}
-                    />
-                  )}
+
+                    {/* COMPACT VERSION HISTORY TABS */}
+                    <div className="absolute bottom-6 right-6 z-40">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            size="icon"
+                            className="w-12 h-12 rounded-full bg-white/90 dark:bg-gray-800/90 shadow-xl border border-gray-200 dark:border-gray-700 backdrop-blur-xl group hover:scale-110 active:scale-95 transition-all text-blue-600"
+                          >
+                            <History className="w-5 h-5 group-hover:rotate-[-45deg] transition-transform" />
+                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white dark:border-gray-800">
+                              {versions.length}
+                            </div>
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent side="top" align="end" className="w-80 p-0 overflow-hidden rounded-2xl shadow-2xl border-gray-200 dark:border-gray-800">
+                          <div className="p-4 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
+                            <h4 className="text-xs font-black uppercase tracking-widest text-gray-500">History Log</h4>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-2 text-[10px] font-bold text-blue-600"
+                              onClick={() => saveResumeVersion(realTimeATS.score)}
+                            >
+                              <Save className="w-3 h-3 mr-1" /> Snapshot
+                            </Button>
+                          </div>
+                          <div className="max-h-64 overflow-y-auto p-2 space-y-1 custom-scrollbar">
+                            {versions.length === 0 ? (
+                              <div className="py-8 text-center bg-gray-50/50 dark:bg-gray-800/20 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
+                                <History className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                                <p className="text-[10px] text-gray-400 font-bold">No snapshots yet.</p>
+                              </div>
+                            ) : (
+                              versions.map((v: any) => (
+                                <div
+                                  key={v.id}
+                                  className="flex items-center justify-between p-3 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-colors cursor-pointer group/item border border-transparent hover:border-blue-100 dark:hover:border-blue-800/50"
+                                  onClick={() => loadResumeVersion(v)}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 text-[10px] font-black">
+                                      {v.score}%
+                                    </div>
+                                    <div className="flex flex-col">
+                                      <span className="text-[11px] font-bold text-gray-900 dark:text-gray-100">{v.name}</span>
+                                      <span className="text-[9px] text-gray-400">{new Date(v.timestamp).toLocaleTimeString()}</span>
+                                    </div>
+                                  </div>
+                                  <ArrowRight className="w-3 h-3 text-blue-600 opacity-0 group-hover/item:opacity-100 transition-all translate-x-[-4px] group-hover/item:translate-x-0" />
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    <div className="flex-1 overflow-auto bg-[#f8fafc] dark:bg-gray-950 p-6 md:p-10 lg:p-14 h-full flex justify-center custom-scrollbar relative">
+                      {/* Visual Canvas Elements */}
+                      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-30">
+                        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-400/20 blur-[120px] rounded-full" />
+                        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-400/20 blur-[120px] rounded-full" />
+                      </div>
+
+                      <motion.div
+                        key={templateName + (isMigratingTemplate ? '-migrating' : '')}
+                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                        className={`w-full ${templateName === "creative" ? "max-w-full" : "max-w-[840px]"} bg-white shadow-[0_25px_60px_rgba(0,0,0,0.15)] rounded-sm ring-1 ring-gray-950/10 transition-all duration-300 ease-in-out relative z-10 border border-gray-100/50`}
+                      >
+                        {isMigratingTemplate ? (
+                          <div className="p-8 space-y-8 animate-pulse">
+                            <div className="flex justify-between items-start">
+                              <div className="space-y-3 w-1/2">
+                                <div className="h-8 bg-gray-200 rounded-md w-3/4"></div>
+                                <div className="h-4 bg-gray-100 rounded-md w-1/2"></div>
+                              </div>
+                              <div className="w-20 h-20 bg-gray-100 rounded-full"></div>
+                            </div>
+                            <div className="space-y-4">
+                              <div className="h-4 bg-gray-200 rounded-md w-full"></div>
+                              <div className="h-4 bg-gray-200 rounded-md w-full"></div>
+                              <div className="h-4 bg-gray-200 rounded-md w-2/3"></div>
+                            </div>
+                            <div className="grid grid-cols-3 gap-4">
+                              {[1, 2, 3].map(i => (
+                                <div key={i} className="space-y-2">
+                                  <div className="h-4 bg-gray-200 rounded-md w-full"></div>
+                                  <div className="h-3 bg-gray-100 rounded-md w-3/4"></div>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="space-y-6 pt-4">
+                              {[1, 2].map(i => (
+                                <div key={i} className="space-y-3">
+                                  <div className="h-6 bg-gray-200 rounded-md w-1/3"></div>
+                                  <div className="h-4 bg-gray-100 rounded-md w-full"></div>
+                                  <div className="h-4 bg-gray-100 rounded-md w-5/6"></div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ) : (
+                          <ResumePreview
+                            data={resumeData}
+                            templateName={templateName}
+                            showAIChanges={showAIChanges}
+                            jobDescription={jobDescription}
+                            isScanning={isScanning}
+                            scanStep={scanStep}
+                            activeSection={steps[currentStep].title}
+                          />
+                        )}
+                      </motion.div>
+                    </div>
+                  </Card>
                 </motion.div>
-              </div>
-            </Card>
+              )}
+            </AnimatePresence>
           </div>
         )}
       </div>
 
-      {/* Floating Chat Bot */}
       <FloatingChatBot resumeData={resumeData} jobDescription={jobDescription} />
 
-      {/* Full Preview Modal */}
       <FullPreviewModal
         isOpen={showFullPreview}
         onClose={() => setShowFullPreview(false)}
@@ -1783,7 +1833,6 @@ const Builder = () => {
         templateName={templateName}
       />
 
-      {/* Generate Modal */}
       <Dialog open={showGenerateModal} onOpenChange={setShowGenerateModal}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
