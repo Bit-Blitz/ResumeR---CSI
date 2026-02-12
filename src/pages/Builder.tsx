@@ -300,12 +300,7 @@ const Builder = () => {
 
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [showFullPreview, setShowFullPreview] = useState(false);
-  const [showStartAnalysis, setShowStartAnalysis] = useState(() => {
-    // Show upload screen if no data is saved and we're at step 0
-    const savedData = localStorage.getItem(RESUME_DATA_KEY);
-    const savedStep = localStorage.getItem(CURRENT_STEP_KEY);
-    return !savedData && (!savedStep || savedStep === "0");
-  });
+  const [showStartAnalysis, setShowStartAnalysis] = useState(false);
 
   const [isScanning, setIsScanning] = useState(false);
   const [scanStep, setScanStep] = useState("");
